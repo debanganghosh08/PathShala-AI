@@ -36,7 +36,7 @@
 </a>
 </p>
 <h3>🚀 Project Demo</h3>
-Click on above button or view live at: https://dharmasynccodeveda.vercel.app/
+Click on above button or view live at: https://path-shala-ai.vercel.app/
 
 ---
 
