@@ -61,7 +61,6 @@ Our solution doesn't just suggest; it *builds*. For every user, our fine-tuned A
 This project was built to fully embrace the hackathon's encouragement to leverage Google's cutting-edge AI technology. Our core intelligence is powered by the Google Cloud ecosystem.
 
 * **Fine-Tuned Gemini 2.5 Flash Lite:** We use a fine-tuned version of the Gemini model as our core engine. It's specifically trained to understand career trajectories and skill dependencies, allowing it to generate highly structured, context-aware roadmaps in a specific JSON format.
-* **Google AI Studio & Vertex AI:** The model was fine-tuned and managed using Google AI Studio, with Vertex AI providing the scalable infrastructure to serve our model's predictions reliably.
 * **Seamless Integration:** The AI is not a bolt-on feature; it's woven into the user's entire journey, from the initial job suggestions to the final, detailed learning path, creating a truly intelligent and responsive experience.
 
 ---
