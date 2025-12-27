@@ -4,7 +4,58 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: rgb(0 0 0);
+  /* --- Keeping the Pitch Black Background --- */
+  --background: rgb(0 0 0); 
+  --foreground: rgb(250 250 250); /* Adjusted foreground for black background */
+  --card: rgb(16 16 16); /* Using dark theme card color as default */
+  --card-foreground: rgb(250 250 250);
+  --popover: rgb(16 16 16); /* Using dark theme popover color */
+  --popover-foreground: rgb(250 250 250);
+  /* Updated primary color to new blue #0097FF */
+  --primary: rgb(0 151 255);
+  --primary-foreground: rgb(250 250 250);
+  --secondary: rgb(38 38 38); /* Using dark theme secondary */
+  --secondary-foreground: rgb(250 250 250);
+  --muted: rgb(38 38 38); /* Using dark theme muted */
+  --muted-foreground: rgb(160 160 160); /* Using dark theme muted foreground */
+  --accent: rgb(38 38 38); /* Using dark theme accent */
+  --accent-foreground: rgb(250 250 250);
+  --destructive: rgb(222 55 86);
+  --destructive-foreground: rgb(250 250 250);
+  --border: rgb(38 38 38); /* Using dark theme border */
+  --input: rgb(38 38 38); /* Using dark theme input */
+  /* Updated ring color to match new primary */
+  --ring: rgb(0 151 255);
+  --chart-1: rgb(244 132 66);
+  --chart-2: rgb(0 150 141);
+  --chart-3: rgb(25 77 98);
+  --chart-4: rgb(243 189 106);
+  --chart-5: rgb(244 157 94);
+  --radius: 0.625rem;
+  --sidebar: rgb(16 16 16); /* Using dark theme sidebar */
+  --sidebar-foreground: rgb(250 250 250);
+  /* Updated sidebar primary to match new primary color */
+  --sidebar-primary: rgb(0 151 255);
+  --sidebar-primary-foreground: rgb(250 250 250);
+  --sidebar-accent: rgb(38 38 38); /* Using dark theme sidebar accent */
+  --sidebar-accent-foreground: rgb(250 250 250);
+  --sidebar-border: rgb(38 38 38); /* Using dark theme sidebar border */
+  /* Updated sidebar ring to match new primary */
+  --sidebar-ring: rgb(0 151 255);
+
+  /* --- NEW ANIMATION & EFFECT DEFINITIONS --- */
+  /* 1. Neon Glow System */
+  --neon-glow-blue: 0 0 5px rgba(0, 151, 255, 0.8), 0 0 20px rgba(0, 151, 255, 0.6), 0 0 40px rgba(0, 151, 255, 0.4);
+
+  /* 2. Premium Easing Curves */
+  --ease-premium-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-premium-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-premium-in: cubic-bezier(0.7, 0, 0.84, 0);
+}
+
+/* --- Keeping Dark theme definitions --- */
+.dark {
+  --background: rgb(0 0 0); /* Explicitly black for dark */
   --foreground: rgb(250 250 250);
   --card: rgb(16 16 16);
   --card-foreground: rgb(250 250 250);
@@ -137,12 +188,12 @@
   transition-duration: 150ms;
 }
 
-.active-link {
+.nav-link {
   position: relative;
-  color: hsl(var(--primary));
+  transition: color 0.3s var(--ease-premium-in-out);
 }
 
-.active-link::after {
+.nav-link::after {
   content: '';
   position: absolute;
   bottom: -2px;
@@ -150,19 +201,50 @@
   width: 100%;
   height: 2px;
   background-color: hsl(var(--primary));
-  animation: growUnderline 0.3s ease-in-out;
+  transform: scaleX(0);
+  transform-origin: bottom right;
+  transition: transform 0.3s var(--ease-premium-out);
 }
 
-@keyframes growUnderline {
-  from {
-    width: 0;
+.nav-link:hover::after,
+.nav-link.active-link::after {
+  transform: scaleX(1);
+  transform-origin: bottom left;
+}
+
+.logo-hover {
+  transition: transform 0.3s var(--ease-premium-in-out);
+}
+
+.logo-hover:hover {
+  transform: rotate(3deg) scale(1.1);
+}
+
+.logo-hover:hover .logo-icon {
+  box-shadow: var(--neon-glow-blue);
+}
+
+/* --- NEW ANIMATION & EFFECT DEFINITIONS --- */
+/* 3. Glossy Shimmer Animation */
+@keyframes shimmer-effect {
+  0% {
+    transform: translateX(-100%) skewX(-15deg);
   }
-  to {
-    width: 100%;
+  100% {
+    transform: translateX(200%) skewX(-15deg);
   }
 }
 
+/* --- Merged @layer components --- */
 @layer components {
+  .card-premium-hover {
+    @apply transition-all duration-300;
+    transition-timing-function: var(--ease-premium-in-out);
+  }
+  .card-premium-hover:hover {
+    transform: translateY(-4px) perspective(1000px) rotateX(2deg);
+    box-shadow: var(--neon-glow-blue);
+  }
   .btn-premium-shimmer::before {
     content: '';
     position: absolute;
@@ -177,14 +259,5 @@
       transparent 80%
     );
     animation: shimmer-effect 1.5s infinite linear;
-  }
-}
-
-@keyframes shimmer-effect {
-  0% {
-    transform: translateX(-100%) skewX(-15deg);
-  }
-  100% {
-    transform: translateX(200%) skewX(-15deg);
   }
 }

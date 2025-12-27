@@ -9,54 +9,14 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { Badge } from "@/components/ui/badge"
-import { ChevronDown, ChevronUp, Plus, Trash2, User, Briefcase, GraduationCap, Code } from "lucide-react"
+import { ChevronDown, ChevronUp, Plus, Trash2, User, Briefcase, GraduationCap, Code, X } from "lucide-react" // Added X
 import type { ResumeData } from "./resume-builder"
+import { improveTextWithAI } from "@/app/actions/resume"; // Assuming this still exists
 
-import { useForm, useFieldArray } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { improveTextWithAI } from "@/app/actions/resume";
-
-const resumeSchema = z.object({
-  personalDetails: z.object({
-    fullName: z.string(),
-    email: z.string().email(),
-    phone: z.string(),
-    location: z.string(),
-    website: z.string().url(),
-    linkedin: z.string().url(),
-  }),
-  summary: z.string(),
-  experience: z.array(
-    z.object({
-      id: z.string(),
-      company: z.string(),
-      position: z.string(),
-      startDate: z.string(),
-      endDate: z.string(),
-      current: z.boolean(),
-      description: z.string(),
-    })
-  ),
-  education: z.array(
-    z.object({
-      id: z.string(),
-      institution: z.string(),
-      degree: z.string(),
-      field: z.string(),
-      startDate: z.string(),
-      endDate: z.string(),
-      gpa: z.string().optional(),
-    })
-  ),
-  skills: z.array(
-    z.object({
-      id: z.string(),
-      category: z.string(),
-      items: z.array(z.string()),
-    })
-  ),
-});
+// --- Zod schema can remain the same if you had it here, or remove if unused ---
+// import { zodResolver } from "@hookform/resolvers/zod";
+// import * as z from "zod";
+// const resumeSchema = z.object({ ... });
 
 interface ResumeFormProps {
   resumeData: ResumeData
@@ -83,9 +43,11 @@ export function ResumeForm({ resumeData, updateResumeData }: ResumeFormProps) {
         updateExperience(experienceId, 'description', improvedText);
       }
     } catch (error) {
-      console.error(error);
+      console.error("Error improving text:", error);
+      // Optional: Add user feedback, e.g., using a toast notification
+    } finally {
+      setIsImproving(false);
     }
-    setIsImproving(false);
   };
 
   const toggleSection = (section: keyof typeof openSections) => {
@@ -174,354 +136,376 @@ export function ResumeForm({ resumeData, updateResumeData }: ResumeFormProps) {
 
   return (
     <div className="space-y-6">
-      {/* Personal Details */}
+      {/* Personal Details Card */}
       <Card>
         <Collapsible open={openSections.personal} onOpenChange={() => toggleSection("personal")}>
           <CollapsibleTrigger asChild>
-            <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <User className="h-5 w-5 text-primary" />
-                  <div>
-                    <CardTitle>Personal Details</CardTitle>
-                    <CardDescription>Your contact information</CardDescription>
-                  </div>
-                </div>
-                {openSections.personal ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-              </div>
-            </CardHeader>
+             <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
+               <div className="flex items-center justify-between">
+                 <div className="flex items-center space-x-3">
+                   <User className="h-5 w-5 text-primary" />
+                   <div>
+                     <CardTitle>Personal Details</CardTitle>
+                     <CardDescription>Your contact information</CardDescription>
+                   </div>
+                 </div>
+                 {openSections.personal ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+               </div>
+             </CardHeader>
           </CollapsibleTrigger>
           <CollapsibleContent>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="fullName">Full Name</Label>
-                  <Input
-                    id="fullName"
-                    value={resumeData.personalDetails.fullName}
-                    onChange={(e) =>
-                      updateResumeData("personalDetails", { ...resumeData.personalDetails, fullName: e.target.value })
-                    }
-                    placeholder="John Doe"
-                    className="bg-background"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={resumeData.personalDetails.email}
-                    onChange={(e) =>
-                      updateResumeData("personalDetails", { ...resumeData.personalDetails, email: e.target.value })
-                    }
-                    placeholder="john@example.com"
-                    className="bg-background"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="phone">Phone</Label>
-                  <Input
-                    id="phone"
-                    value={resumeData.personalDetails.phone}
-                    onChange={(e) =>
-                      updateResumeData("personalDetails", { ...resumeData.personalDetails, phone: e.target.value })
-                    }
-                    placeholder="+1 (555) 123-4567"
-                    className="bg-background"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="location">Location</Label>
-                  <Input
-                    id="location"
-                    value={resumeData.personalDetails.location}
-                    onChange={(e) =>
-                      updateResumeData("personalDetails", { ...resumeData.personalDetails, location: e.target.value })
-                    }
-                    placeholder="New York, NY"
-                    className="bg-background"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="website">Website</Label>
-                  <Input
-                    id="website"
-                    value={resumeData.personalDetails.website}
-                    onChange={(e) =>
-                      updateResumeData("personalDetails", { ...resumeData.personalDetails, website: e.target.value })
-                    }
-                    placeholder="https://johndoe.com"
-                    className="bg-background"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="linkedin">LinkedIn</Label>
-                  <Input
-                    id="linkedin"
-                    value={resumeData.personalDetails.linkedin}
-                    onChange={(e) =>
-                      updateResumeData("personalDetails", { ...resumeData.personalDetails, linkedin: e.target.value })
-                    }
-                    placeholder="linkedin.com/in/johndoe"
-                    className="bg-background"
-                  />
-                </div>
-              </div>
-            </CardContent>
+             <CardContent className="space-y-4 pt-4"> {/* Added pt-4 */}
+               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                 <div className="space-y-2">
+                   <Label htmlFor="fullName">Full Name</Label>
+                   <Input
+                     id="fullName"
+                     value={resumeData.personalDetails.fullName}
+                     onChange={(e) =>
+                       updateResumeData("personalDetails", { ...resumeData.personalDetails, fullName: e.target.value })
+                     }
+                     placeholder="John Doe"
+                     className="bg-background"
+                   />
+                 </div>
+                 <div className="space-y-2">
+                   <Label htmlFor="email">Email</Label>
+                   <Input
+                     id="email"
+                     type="email"
+                     value={resumeData.personalDetails.email}
+                     onChange={(e) =>
+                       updateResumeData("personalDetails", { ...resumeData.personalDetails, email: e.target.value })
+                     }
+                     placeholder="john@example.com"
+                     className="bg-background"
+                   />
+                 </div>
+                 <div className="space-y-2">
+                   <Label htmlFor="phone">Phone</Label>
+                   <Input
+                     id="phone"
+                     value={resumeData.personalDetails.phone}
+                     onChange={(e) =>
+                       updateResumeData("personalDetails", { ...resumeData.personalDetails, phone: e.target.value })
+                     }
+                     placeholder="+1 (555) 123-4567"
+                     className="bg-background"
+                   />
+                 </div>
+                 <div className="space-y-2">
+                   <Label htmlFor="location">Location</Label>
+                   <Input
+                     id="location"
+                     value={resumeData.personalDetails.location}
+                     onChange={(e) =>
+                       updateResumeData("personalDetails", { ...resumeData.personalDetails, location: e.target.value })
+                     }
+                     placeholder="New York, NY"
+                     className="bg-background"
+                   />
+                 </div>
+                 <div className="space-y-2">
+                   <Label htmlFor="website">Website</Label>
+                   <Input
+                     id="website"
+                     value={resumeData.personalDetails.website}
+                     onChange={(e) =>
+                       updateResumeData("personalDetails", { ...resumeData.personalDetails, website: e.target.value })
+                     }
+                     placeholder="https://johndoe.com"
+                     className="bg-background"
+                   />
+                 </div>
+                 <div className="space-y-2">
+                   <Label htmlFor="linkedin">LinkedIn</Label>
+                   <Input
+                     id="linkedin"
+                     value={resumeData.personalDetails.linkedin}
+                     onChange={(e) =>
+                       updateResumeData("personalDetails", { ...resumeData.personalDetails, linkedin: e.target.value })
+                     }
+                     placeholder="linkedin.com/in/johndoe"
+                     className="bg-background"
+                   />
+                 </div>
+               </div>
+             </CardContent>
           </CollapsibleContent>
         </Collapsible>
       </Card>
 
-      {/* Professional Summary */}
-      <Card>
-        <Collapsible open={openSections.summary} onOpenChange={() => toggleSection("summary")}>
-          <CollapsibleTrigger asChild>
-            <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <User className="h-5 w-5 text-primary" />
-                  <div>
-                    <CardTitle>Professional Summary</CardTitle>
-                    <CardDescription>Brief overview of your experience</CardDescription>
-                  </div>
-                </div>
-                {openSections.summary ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-              </div>
-            </CardHeader>
-          </CollapsibleTrigger>
-          <CollapsibleContent>
-            <CardContent>
-              <div className="space-y-2">
-                <Label htmlFor="summary">Summary</Label>
-                <Textarea
-                  id="summary"
-                  value={resumeData.summary}
-                  onChange={(e) => updateResumeData("summary", e.target.value)}
-                  placeholder="Experienced software developer with 5+ years of expertise in full-stack development..."
-                  rows={4}
-                  className="bg-background"
-                />
-              </div>
-            </CardContent>
-          </CollapsibleContent>
-        </Collapsible>
-      </Card>
+      {/* Professional Summary Card */}
+       <Card>
+         <Collapsible open={openSections.summary} onOpenChange={() => toggleSection("summary")}>
+           <CollapsibleTrigger asChild>
+             <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
+               <div className="flex items-center justify-between">
+                 <div className="flex items-center space-x-3">
+                   <User className="h-5 w-5 text-primary" /> {/* Changed Icon */}
+                   <div>
+                     <CardTitle>Professional Summary</CardTitle>
+                     <CardDescription>Brief overview of your experience</CardDescription>
+                   </div>
+                 </div>
+                 {openSections.summary ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+               </div>
+             </CardHeader>
+           </CollapsibleTrigger>
+           <CollapsibleContent>
+             <CardContent className="pt-4 space-y-2"> {/* Added pt-4 */}
+               <Label htmlFor="summary">Summary</Label>
+               <Textarea
+                 id="summary"
+                 value={resumeData.summary}
+                 onChange={(e) => updateResumeData("summary", e.target.value)}
+                 placeholder="Experienced software developer with 5+ years..."
+                 rows={4}
+                 className="bg-background"
+               />
+              {/* AI Improve Button */}
+              <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleImproveText(resumeData.summary, 'summary')}
+                  disabled={isImproving || !resumeData.summary}
+                  className="mt-2 bg-transparent"
+              >
+                  {isImproving ? 'Improving...' : 'Improve with AI ✨'}
+              </Button>
+             </CardContent>
+           </CollapsibleContent>
+         </Collapsible>
+       </Card>
 
-      {/* Experience */}
+      {/* Experience Card */}
       <Card>
         <Collapsible open={openSections.experience} onOpenChange={() => toggleSection("experience")}>
           <CollapsibleTrigger asChild>
             <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <Briefcase className="h-5 w-5 text-primary" />
-                  <div>
-                    <CardTitle>Work Experience</CardTitle>
-                    <CardDescription>Your professional experience</CardDescription>
-                  </div>
-                </div>
-                {openSections.experience ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-              </div>
-            </CardHeader>
+               <div className="flex items-center justify-between">
+                 <div className="flex items-center space-x-3">
+                   <Briefcase className="h-5 w-5 text-primary" />
+                   <div>
+                     <CardTitle>Work Experience</CardTitle>
+                     <CardDescription>Your professional experience</CardDescription>
+                   </div>
+                 </div>
+                 {openSections.experience ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+               </div>
+             </CardHeader>
           </CollapsibleTrigger>
           <CollapsibleContent>
-            <CardContent className="space-y-4">
-              {resumeData.experience.map((exp, index) => (
-                <motion.div
-                  key={exp.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="p-4 border rounded-lg space-y-4"
-                >
-                  <div className="flex items-center justify-between">
-                    <h4 className="font-medium">Experience {index + 1}</h4>
-                    <Button variant="ghost" size="sm" onClick={() => removeExperience(exp.id)}>
-                      <Trash2 className="h-4 w-4" />
+             <CardContent className="space-y-4 pt-4"> {/* Added pt-4 */}
+               {resumeData.experience.map((exp, index) => (
+                 <motion.div
+                   key={exp.id}
+                   initial={{ opacity: 0, y: 10 }} // Adjusted animation
+                   animate={{ opacity: 1, y: 0 }}
+                   transition={{ delay: index * 0.1 }}
+                   className="p-4 border rounded-lg space-y-4 bg-background/50" // Slightly different bg
+                 >
+                   <div className="flex items-center justify-between">
+                     <h4 className="font-medium text-foreground/90">Experience {index + 1}</h4>
+                     <Button variant="ghost" size="icon" onClick={() => removeExperience(exp.id)} className="text-muted-foreground hover:text-destructive h-7 w-7">
+                       <Trash2 className="h-4 w-4" />
+                     </Button>
+                   </div>
+
+                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                     <div className="space-y-2">
+                       <Label>Company</Label>
+                       <Input
+                         value={exp.company}
+                         onChange={(e) => updateExperience(exp.id, "company", e.target.value)}
+                         placeholder="Company Name"
+                         className="bg-background"
+                       />
+                     </div>
+                     <div className="space-y-2">
+                       <Label>Position</Label>
+                       <Input
+                         value={exp.position}
+                         onChange={(e) => updateExperience(exp.id, "position", e.target.value)}
+                         placeholder="Job Title"
+                         className="bg-background"
+                       />
+                     </div>
+                     <div className="space-y-2">
+                       <Label>Start Date</Label>
+                       <Input
+                         type="month"
+                         value={exp.startDate}
+                         onChange={(e) => updateExperience(exp.id, "startDate", e.target.value)}
+                         className="bg-background"
+                       />
+                     </div>
+                     <div className="space-y-2">
+                       <Label>End Date</Label>
+                       <Input
+                         type="month"
+                         value={exp.endDate}
+                         onChange={(e) => updateExperience(exp.id, "endDate", e.target.value)}
+                         disabled={exp.current}
+                         className="bg-background"
+                       />
+                      {/* Current Job Checkbox - Optional */}
+                     </div>
+                   </div>
+
+                   <div className="space-y-2">
+                     <Label>Description</Label>
+                     <Textarea
+                       value={exp.description}
+                       onChange={(e) => updateExperience(exp.id, "description", e.target.value)}
+                       placeholder="Describe your responsibilities..."
+                       rows={3}
+                       className="bg-background"
+                     />
+                   {/* AI Improve Button */}
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleImproveText(exp.description, 'description', exp.id)}
+                        disabled={isImproving || !exp.description}
+                        className="mt-2 bg-transparent"
+                    >
+                         {isImproving ? 'Improving...' : 'Improve with AI ✨'}
                     </Button>
-                  </div>
+                   </div>
+                 </motion.div>
+               ))}
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Company</Label>
-                      <Input
-                        value={exp.company}
-                        onChange={(e) => updateExperience(exp.id, "company", e.target.value)}
-                        placeholder="Company Name"
-                        className="bg-background"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Position</Label>
-                      <Input
-                        value={exp.position}
-                        onChange={(e) => updateExperience(exp.id, "position", e.target.value)}
-                        placeholder="Job Title"
-                        className="bg-background"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Start Date</Label>
-                      <Input
-                        type="month"
-                        value={exp.startDate}
-                        onChange={(e) => updateExperience(exp.id, "startDate", e.target.value)}
-                        className="bg-background"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>End Date</Label>
-                      <Input
-                        type="month"
-                        value={exp.endDate}
-                        onChange={(e) => updateExperience(exp.id, "endDate", e.target.value)}
-                        disabled={exp.current}
-                        className="bg-background"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Description</Label>
-                    <Textarea
-                      value={exp.description}
-                      onChange={(e) => updateExperience(exp.id, "description", e.target.value)}
-                      placeholder="Describe your responsibilities and achievements..."
-                      rows={3}
-                      className="bg-background"
-                    />
-                  </div>
-                </motion.div>
-              ))}
-
-              <Button onClick={addExperience} variant="outline" className="w-full bg-transparent">
-                <Plus className="mr-2 h-4 w-4" />
-                Add Experience
-              </Button>
-            </CardContent>
+               <Button onClick={addExperience} variant="outline" className="w-full bg-transparent">
+                 <Plus className="mr-2 h-4 w-4" />
+                 Add Experience
+               </Button>
+             </CardContent>
           </CollapsibleContent>
         </Collapsible>
       </Card>
 
-      {/* Education */}
+      {/* Education Card */}
       <Card>
         <Collapsible open={openSections.education} onOpenChange={() => toggleSection("education")}>
           <CollapsibleTrigger asChild>
             <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <GraduationCap className="h-5 w-5 text-primary" />
-                  <div>
-                    <CardTitle>Education</CardTitle>
-                    <CardDescription>Your educational background</CardDescription>
-                  </div>
-                </div>
-                {openSections.education ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-              </div>
-            </CardHeader>
+               <div className="flex items-center justify-between">
+                 <div className="flex items-center space-x-3">
+                   <GraduationCap className="h-5 w-5 text-primary" />
+                   <div>
+                     <CardTitle>Education</CardTitle>
+                     <CardDescription>Your educational background</CardDescription>
+                   </div>
+                 </div>
+                 {openSections.education ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+               </div>
+             </CardHeader>
           </CollapsibleTrigger>
           <CollapsibleContent>
-            <CardContent className="space-y-4">
-              {resumeData.education.map((edu, index) => (
-                <motion.div
-                  key={edu.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="p-4 border rounded-lg space-y-4"
-                >
-                  <div className="flex items-center justify-between">
-                    <h4 className="font-medium">Education {index + 1}</h4>
-                    <Button variant="ghost" size="sm" onClick={() => removeEducation(edu.id)}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
+             <CardContent className="space-y-4 pt-4"> {/* Added pt-4 */}
+               {resumeData.education.map((edu, index) => (
+                 <motion.div
+                   key={edu.id}
+                   initial={{ opacity: 0, y: 10 }} // Adjusted animation
+                   animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                   className="p-4 border rounded-lg space-y-4 bg-background/50" // Slightly different bg
+                 >
+                   <div className="flex items-center justify-between">
+                     <h4 className="font-medium text-foreground/90">Education {index + 1}</h4>
+                     <Button variant="ghost" size="icon" onClick={() => removeEducation(edu.id)} className="text-muted-foreground hover:text-destructive h-7 w-7">
+                       <Trash2 className="h-4 w-4" />
+                     </Button>
+                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Institution</Label>
-                      <Input
-                        value={edu.institution}
-                        onChange={(e) => updateEducation(edu.id, "institution", e.target.value)}
-                        placeholder="University Name"
-                        className="bg-background"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Degree</Label>
-                      <Input
-                        value={edu.degree}
-                        onChange={(e) => updateEducation(edu.id, "degree", e.target.value)}
-                        placeholder="Bachelor's, Master's, etc."
-                        className="bg-background"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Field of Study</Label>
-                      <Input
-                        value={edu.field}
-                        onChange={(e) => updateEducation(edu.id, "field", e.target.value)}
-                        placeholder="Computer Science"
-                        className="bg-background"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>GPA (Optional)</Label>
-                      <Input
-                        value={edu.gpa}
-                        onChange={(e) => updateEducation(edu.id, "gpa", e.target.value)}
-                        placeholder="3.8/4.0"
-                        className="bg-background"
-                      />
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
+                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                     <div className="space-y-2">
+                       <Label>Institution</Label>
+                       <Input
+                         value={edu.institution}
+                         onChange={(e) => updateEducation(edu.id, "institution", e.target.value)}
+                         placeholder="University Name"
+                         className="bg-background"
+                       />
+                     </div>
+                     <div className="space-y-2">
+                       <Label>Degree</Label>
+                       <Input
+                         value={edu.degree}
+                         onChange={(e) => updateEducation(edu.id, "degree", e.target.value)}
+                         placeholder="Bachelor's, Master's, etc."
+                         className="bg-background"
+                       />
+                     </div>
+                     <div className="space-y-2">
+                       <Label>Field of Study</Label>
+                       <Input
+                         value={edu.field}
+                         onChange={(e) => updateEducation(edu.id, "field", e.target.value)}
+                         placeholder="Computer Science"
+                         className="bg-background"
+                       />
+                     </div>
+                     <div className="space-y-2">
+                       <Label>GPA (Optional)</Label>
+                       <Input
+                         value={edu.gpa}
+                         onChange={(e) => updateEducation(edu.id, "gpa", e.target.value)}
+                         placeholder="3.8/4.0"
+                         className="bg-background"
+                       />
+                     </div>
+                     {/* You might want to add Start/End Date fields here too */}
+                   </div>
+                 </motion.div>
+               ))}
 
-              <Button onClick={addEducation} variant="outline" className="w-full bg-transparent">
-                <Plus className="mr-2 h-4 w-4" />
-                Add Education
-              </Button>
-            </CardContent>
+               <Button onClick={addEducation} variant="outline" className="w-full bg-transparent">
+                 <Plus className="mr-2 h-4 w-4" />
+                 Add Education
+               </Button>
+             </CardContent>
           </CollapsibleContent>
         </Collapsible>
       </Card>
 
-      {/* Skills */}
+      {/* Skills Card */}
       <Card>
         <Collapsible open={openSections.skills} onOpenChange={() => toggleSection("skills")}>
           <CollapsibleTrigger asChild>
-            <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <Code className="h-5 w-5 text-primary" />
-                  <div>
-                    <CardTitle>Skills</CardTitle>
-                    <CardDescription>Your technical and soft skills</CardDescription>
-                  </div>
-                </div>
-                {openSections.skills ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-              </div>
-            </CardHeader>
+             <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
+               <div className="flex items-center justify-between">
+                 <div className="flex items-center space-x-3">
+                   <Code className="h-5 w-5 text-primary" />
+                   <div>
+                     <CardTitle>Skills</CardTitle>
+                     <CardDescription>Your technical and soft skills</CardDescription>
+                   </div>
+                 </div>
+                 {openSections.skills ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+               </div>
+             </CardHeader>
           </CollapsibleTrigger>
           <CollapsibleContent>
-            <CardContent className="space-y-4">
-              {resumeData.skills.map((skillCategory, index) => (
-                <SkillCategoryForm
-                  key={skillCategory.id}
-                  skillCategory={skillCategory}
-                  index={index}
-                  updateSkillCategory={updateSkillCategory}
-                  removeSkillCategory={removeSkillCategory}
-                  addSkillItem={addSkillItem}
-                  removeSkillItem={removeSkillItem}
-                />
-              ))}
+             <CardContent className="space-y-4 pt-4"> {/* Added pt-4 */}
+               {resumeData.skills.map((skillCategory, index) => (
+                 <SkillCategoryForm
+                   key={skillCategory.id}
+                   skillCategory={skillCategory}
+                   index={index}
+                   updateSkillCategory={updateSkillCategory}
+                   removeSkillCategory={removeSkillCategory}
+                   addSkillItem={addSkillItem}
+                   removeSkillItem={removeSkillItem}
+                 />
+               ))}
 
-              <Button onClick={addSkillCategory} variant="outline" className="w-full bg-transparent">
-                <Plus className="mr-2 h-4 w-4" />
-                Add Skill Category
-              </Button>
-            </CardContent>
+               <Button onClick={addSkillCategory} variant="outline" className="w-full bg-transparent">
+                 <Plus className="mr-2 h-4 w-4" />
+                 Add Skill Category
+               </Button>
+             </CardContent>
           </CollapsibleContent>
         </Collapsible>
       </Card>
@@ -529,6 +513,7 @@ export function ResumeForm({ resumeData, updateResumeData }: ResumeFormProps) {
   )
 }
 
+// --- SkillCategoryForm component remains the same ---
 interface SkillCategoryFormProps {
   skillCategory: { id: string; category: string; items: string[] }
   index: number
@@ -557,13 +542,14 @@ function SkillCategoryForm({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 10 }} // Adjusted animation
       animate={{ opacity: 1, y: 0 }}
-      className="p-4 border rounded-lg space-y-4"
+      transition={{ delay: index * 0.1 }}
+      className="p-4 border rounded-lg space-y-4 bg-background/50" // Slightly different bg
     >
       <div className="flex items-center justify-between">
-        <h4 className="font-medium">Skill Category {index + 1}</h4>
-        <Button variant="ghost" size="sm" onClick={() => removeSkillCategory(skillCategory.id)}>
+        <h4 className="font-medium text-foreground/90">Skill Category {index + 1}</h4>
+        <Button variant="ghost" size="icon" onClick={() => removeSkillCategory(skillCategory.id)} className="text-muted-foreground hover:text-destructive h-7 w-7">
           <Trash2 className="h-4 w-4" />
         </Button>
       </div>
@@ -573,7 +559,7 @@ function SkillCategoryForm({
         <Input
           value={skillCategory.category}
           onChange={(e) => updateSkillCategory(skillCategory.id, "category", e.target.value)}
-          placeholder="e.g., Programming Languages, Frameworks"
+          placeholder="e.g., Programming Languages"
           className="bg-background"
         />
       </div>
@@ -582,13 +568,15 @@ function SkillCategoryForm({
         <Label>Skills</Label>
         <div className="flex flex-wrap gap-2 mb-2">
           {skillCategory.items.map((skill, skillIndex) => (
-            <Badge key={skillIndex} variant="secondary" className="cursor-pointer">
+            <Badge key={skillIndex} variant="secondary" className="cursor-default flex items-center"> {/* Changed cursor */}
               {skill}
               <button
+                type="button" // Added type="button"
                 onClick={() => removeSkillItem(skillCategory.id, skillIndex)}
-                className="ml-1 hover:text-destructive"
+                className="ml-1.5 p-0.5 rounded-full hover:bg-destructive/20 hover:text-destructive focus:outline-none focus:ring-1 focus:ring-destructive"
+                aria-label={`Remove ${skill}`}
               >
-                ×
+                <X className="h-3 w-3" /> {/* Use X icon for removal */}
               </button>
             </Badge>
           ))}
@@ -597,11 +585,16 @@ function SkillCategoryForm({
           <Input
             value={newSkill}
             onChange={(e) => setNewSkill(e.target.value)}
-            placeholder="Add a skill"
+            placeholder="Add a skill and press Enter"
             className="bg-background"
-            onKeyPress={(e) => e.key === "Enter" && handleAddSkill()}
+            onKeyDown={(e) => { // Changed to onKeyDown for Enter
+              if (e.key === "Enter") {
+                 e.preventDefault(); // Prevent form submission if inside a form
+                 handleAddSkill();
+              }
+            }}
           />
-          <Button onClick={handleAddSkill} size="sm">
+          <Button onClick={handleAddSkill} size="sm" type="button"> {/* Added type="button" */}
             Add
           </Button>
         </div>

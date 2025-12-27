@@ -6,6 +6,7 @@ import { ResumeForm } from "./resume-form"
 import { ResumePreview } from "./resume-preview"
 import { PageLoader } from "@/components/page-loader"
 
+// --- ResumeData interface remains the same ---
 export interface ResumeData {
   personalDetails: {
     fullName: string
@@ -41,6 +42,7 @@ export interface ResumeData {
   }>
 }
 
+// --- initialResumeData remains the same ---
 const initialResumeData: ResumeData = {
   personalDetails: {
     fullName: "",
@@ -58,7 +60,7 @@ const initialResumeData: ResumeData = {
 
 export function ResumeBuilder() {
   const [resumeData, setResumeData] = useState<ResumeData>(initialResumeData)
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(false) // Assuming you might use this later
 
   const updateResumeData = (section: keyof ResumeData, data: any) => {
     setResumeData((prev) => ({
@@ -89,6 +91,7 @@ export function ResumeBuilder() {
 
           {/* Right column - Preview */}
           <div className="lg:sticky lg:top-24 lg:h-fit">
+            {/* Pass resumeData to Preview */}
             <ResumePreview resumeData={resumeData} />
           </div>
         </div>

@@ -11,6 +11,32 @@ import { useAuth } from "@/context/AuthContext"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
+const mobileMenuVariants = {
+  open: {
+    transition: { staggerChildren: 0.07, delayChildren: 0.2 }
+  },
+  closed: {
+    transition: { staggerChildren: 0.05, staggerDirection: -1 }
+  }
+};
+
+const menuItemVariants = {
+  open: {
+    y: 0,
+    opacity: 1,
+    transition: {
+      y: { stiffness: 1000, velocity: -100 }
+    }
+  },
+  closed: {
+    y: 50,
+    opacity: 0,
+    transition: {
+      y: { stiffness: 1000 }
+    }
+  }
+};
+
 export function Navbar() {
   const { theme, setTheme } = useTheme()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -75,8 +101,8 @@ export function Navbar() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link href={logoHref} className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+          <Link href={logoHref} className="flex items-center space-x-2 logo-hover">
+            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center logo-icon">
               <span className="text-primary-foreground font-bold text-lg">P</span>
             </div>
             <span className="text-xl font-bold text-foreground">PathShala AI</span>
@@ -88,7 +114,7 @@ export function Navbar() {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`font-medium text-foreground/80 hover:text-primary transform transition-all duration-300 hover:-translate-y-0.5 ${pathname === item.href ? 'active-link' : ''}`}
+                className={`nav-link font-medium text-foreground/80 hover:text-primary ${pathname === item.href ? 'active-link' : ''}`}
               >
                 {item.label}
               </Link>
@@ -141,23 +167,25 @@ export function Navbar() {
         <AnimatePresence>
           {isMenuOpen && (
             <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
+              initial="closed"
+              animate="open"
+              exit="closed"
+              variants={mobileMenuVariants}
               className="md:hidden border-t border-border/50 mt-2 pt-4 pb-4"
             >
-              <div className="flex flex-col space-y-4">
+              <motion.div className="flex flex-col space-y-4">
                 {isAuthenticated && navItems.map((item) => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={`font-medium text-foreground/80 hover:text-primary transform transition-all duration-300 hover:-translate-y-0.5 ${pathname === item.href ? 'active-link' : ''}`}
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    {item.label}
-                  </Link>
+                  <motion.div variants={menuItemVariants} key={item.href}>
+                    <Link
+                      href={item.href}
+                      className={`nav-link font-medium text-foreground/80 hover:text-primary ${pathname === item.href ? 'active-link' : ''}`}
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      {item.label}
+                    </Link>
+                  </motion.div>
                 ))}
-              </div>
+              </motion.div>
             </motion.div>
           )}
         </AnimatePresence>

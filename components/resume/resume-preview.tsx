@@ -5,7 +5,6 @@ import { Separator } from "@/components/ui/separator"
 import { SaveIcon,Download, Share2 } from "lucide-react"
 import type { ResumeData } from "./resume-builder"
 import jsPDF from "jspdf"
-import html2canvas from "html2canvas"
 
 interface ResumePreviewProps {
   resumeData: ResumeData
@@ -13,15 +12,17 @@ interface ResumePreviewProps {
 
 export function ResumePreview({ resumeData }: ResumePreviewProps) {
   const handleDownload = () => {
-    const resume = document.getElementById("resume-content");
-    if (resume) {
-      html2canvas(resume).then((canvas) => {
-        const imgData = canvas.toDataURL("image/png");
-        const pdf = new jsPDF("p", "mm", "a4");
-        const width = pdf.internal.pageSize.getWidth();
-        const height = pdf.internal.pageSize.getHeight();
-        pdf.addImage(imgData, "PNG", 0, 0, width, height);
-        pdf.save("resume.pdf");
+    const resumeElement = document.getElementById("resume-content");
+    if (resumeElement) {
+      const pdf = new jsPDF("p", "mm", "a4");
+      pdf.html(resumeElement, {
+        callback: function (pdf) {
+          pdf.save("resume.pdf");
+        },
+        x: 10,
+        y: 10,
+        width: 190,
+        windowWidth: resumeElement.scrollWidth,
       });
     }
   };
