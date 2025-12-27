@@ -12,6 +12,8 @@ import Markdown from 'react-markdown';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
+const WANDB_API_KEY = "5ce8e960f3195c08050f540dc74dbd877ddf24a7";
+
 interface Message {
   role: 'user' | 'model';
   parts: { text: string }[];
